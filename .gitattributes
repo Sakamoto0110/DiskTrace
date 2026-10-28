@@ -1,0 +1,4 @@
+# Windows PowerShell 5.1 reads BOM-less scripts as ANSI: keep the UTF-8 BOM (stored as content) and CRLF
+*.ps1  text eol=crlf
+*.cmd  text eol=crlf
+*.md   text eol=lf

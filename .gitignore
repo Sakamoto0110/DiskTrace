@@ -1,0 +1,2 @@
+# generated reports (they list file names; never commit them)
+*.html
