@@ -1,6 +1,8 @@
-# disk-report
+# DiskTrace
 
 Pick a drive, get an offline HTML report of how its files are laid out.
+
+DiskTrace maps storage *layout* (what takes space, and where). It does not trace disk I/O.
 
 - **One file, no dependencies.** Pure Windows PowerShell 5.1 (the one that ships with Windows); also runs on
   PowerShell 7. The scan is a small C# class that Windows compiles on the fly with `Add-Type`. No Python, nothing
@@ -16,13 +18,13 @@ Pick a drive, get an offline HTML report of how its files are laid out.
 
 ## Usage
 
-Double-click `disk-report.cmd`, choose a drive with the arrow keys (or W/S) and press Enter. The report opens in the
-browser and is saved to `Documents\Disk reports` (`Documents\Relatorios de disco` in Portuguese).
+Double-click `disktrace.cmd`, choose a drive with the arrow keys (or W/S) and press Enter. The report opens in the
+browser and is saved to `Documents\DiskTrace`.
 
 ```powershell
-.\disk-report.ps1                                   # menu
-.\disk-report.ps1 -Drive D -NoOpen                  # no menu
-.\disk-report.ps1 -Drive C:\Projects -UserProfile none -OutputDir C:\Reports -Language en
+.\disktrace.ps1                                     # menu
+.\disktrace.ps1 -Drive D -NoOpen                    # no menu
+.\disktrace.ps1 -Drive C:\Projects -UserProfile none -OutputDir C:\Reports -Language en
 ```
 
 | Parameter | Meaning |
@@ -42,13 +44,23 @@ Every folder is in the report. Files are listed one by one when they are 100 MB 
 user's personal folders (the 15 largest per folder, outside `AppData`, caches, `.git`, `node_modules` and build
 output).
 
+## Roadmap
+
+- **Snapshots:** keep a compact, versioned snapshot of each scan (per-folder size, file count, newest date, large
+  files) next to the report.
+- **Deltas:** compare two snapshots, for example week over week: what grew, what shrank, what appeared or
+  disappeared.
+- **Scheduled scans:** an optional weekly scheduled task that takes a snapshot.
+
 ## License
 
 [MIT](LICENSE)
 
 ## Português
 
-Escolha um disco e receba um relatório HTML offline de como os arquivos estão distribuídos. Dê dois cliques em
-`disk-report.cmd`, escolha o disco com as setas (ou W/S) e Enter. O relatório abre no navegador e fica em
-`Documentos\Relatorios de disco`. Só lê nomes, tamanhos e datas, não abre arquivos, não segue atalhos do sistema
-e a página não acessa a rede. A interface segue o idioma do Windows; `-Language pt-BR` ou `-Language en` força.
+Escolha um disco e receba um relatório HTML offline de como os arquivos estão distribuídos. O DiskTrace mostra a
+*ocupação* do disco, não rastreia leituras e gravações. Dê dois cliques em `disktrace.cmd`, escolha o disco com as
+setas (ou W/S) e Enter. O relatório abre no navegador e fica em `Documentos\DiskTrace`. Só lê nomes, tamanhos e
+datas, não abre arquivos, não segue atalhos do sistema e a página não acessa a rede. A interface segue o idioma do
+Windows; `-Language pt-BR` ou `-Language en` força. Próximos passos: guardar uma foto de cada varredura e comparar
+fotos para ver o que mudou entre semanas.

@@ -3,7 +3,7 @@
     Pick a drive and get an offline HTML report of how its files are laid out.
 
 .DESCRIPTION
-    disk-report 1.0.0 -- pure Windows PowerShell; no Python, no install.
+    DiskTrace 1.0.0 -- pure Windows PowerShell; no Python, no install.
     The scan is a small C# class compiled on the fly by Windows (Add-Type). It reads names, sizes and dates only:
     no file is opened and nothing on the scanned drive is changed. Reparse points (junctions, symlinks) are listed
     but never followed. The page is a single self-contained HTML file that makes no network request
@@ -14,11 +14,11 @@
     -Language overrides it.
 
 .EXAMPLE
-    .\disk-report.ps1                      # arrow-key menu: Up/Down or W/S, Enter, Esc
+    .\disktrace.ps1                      # arrow-key menu: Up/Down or W/S, Enter, Esc
 .EXAMPLE
-    .\disk-report.ps1 -Drive D -NoOpen     # no menu
+    .\disktrace.ps1 -Drive D -NoOpen     # no menu
 .EXAMPLE
-    .\disk-report.ps1 -Drive C:\Projects -UserProfile none -OutputDir C:\Reports -Language en
+    .\disktrace.ps1 -Drive C:\Projects -UserProfile none -OutputDir C:\Reports -Language en
 #>
 param(
     [string]$OutputDir,
@@ -41,9 +41,9 @@ $Strings = @{
         scanning = 'Scanning {0} (names, sizes and dates only)...'; foldersRead = '  {0} folders read'
         building = 'Building the page...'
         done = 'Done in {0} s: {1} folders, {2} files, {3} protected folders could not be read.'
-        pageAt = 'Page: {0} ({1} MB)'; pressEnter = 'Press Enter to exit'; outDir = 'Disk reports'
+        pageAt = 'Page: {0} ({1} MB)'; pressEnter = 'Press Enter to exit'; outDir = 'DiskTrace'
         titleDrive = 'Drive {0} - {1}'; titleFolder = 'Folder {0}'; driveWord = 'drive'
-        generated = 'Generated {0} · {1}'; dateFmt = 'yyyy-MM-dd HH:mm'
+        generated = 'DiskTrace · generated {0} · {1}'; dateFmt = 'yyyy-MM-dd HH:mm'
         capacity = 'capacity'; used = 'used'; freeCard = 'free'; filesCounted = 'files counted'; folders = 'folders'; largest = 'largest: '
         help = 'Click a folder to open it; "smaller items" opens too. The bar compares the size with the parent folder; hover to see the full path. Files are listed one by one when they are 100 MB or larger or sit in personal folders. Reparse points (junctions, links) are shown but not followed. Names, sizes and dates only; no file was opened. {0} folders could not be read (protected by the system) and are left out of the totals.'
         search = 'Search folder or file (Enter)'; collapse = 'Collapse all'
@@ -57,9 +57,9 @@ $Strings = @{
         scanning = 'Varrendo {0} (só nomes, tamanhos e datas)...'; foldersRead = '  {0} pastas lidas'
         building = 'Montando a página...'
         done = 'Pronto em {0} s: {1} pastas, {2} arquivos, {3} pastas protegidas não lidas.'
-        pageAt = 'Página: {0} ({1} MB)'; pressEnter = 'Enter para sair'; outDir = 'Relatorios de disco'
+        pageAt = 'Página: {0} ({1} MB)'; pressEnter = 'Enter para sair'; outDir = 'DiskTrace'
         titleDrive = 'Disco {0} - {1}'; titleFolder = 'Pasta {0}'; driveWord = 'disco'
-        generated = 'Gerado em {0} · {1}'; dateFmt = 'dd/MM/yyyy HH:mm'
+        generated = 'DiskTrace · gerado em {0} · {1}'; dateFmt = 'dd/MM/yyyy HH:mm'
         capacity = 'capacidade'; used = 'usado'; freeCard = 'livre'; filesCounted = 'arquivos contados'; folders = 'pastas'; largest = 'maior: '
         help = 'Clique numa pasta para abrir; "itens menores" também abre. A barra compara o tamanho com a pasta de cima; passe o mouse para ver o caminho completo. Arquivos aparecem individualmente quando têm 100 MB ou mais ou estão nas pastas pessoais. Atalhos do sistema (junções, links) aparecem mas não são seguidos. Só nomes, tamanhos e datas; nenhum arquivo foi aberto. {0} pastas não puderam ser lidas (protegidas pelo sistema) e ficam de fora dos totais.'
         search = 'Buscar pasta ou arquivo (Enter)'; collapse = 'Recolher tudo'
@@ -77,7 +77,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-public class DiskReportScanner
+public class DiskTraceScanner
 {
     public List<string> Names = new List<string>();
     public List<int> Parent = new List<int>();
@@ -107,9 +107,9 @@ public class DiskReportScanner
 
     // Walk `root` without following reparse points. Inside `profile` (outside AppData, caches and build output)
     // the 15 largest files of each folder are kept; anywhere else only files of 100 MB or more.
-    public static DiskReportScanner Run(string root, string profile, Action<int> progress)
+    public static DiskTraceScanner Run(string root, string profile, Action<int> progress)
     {
-        var s = new DiskReportScanner();
+        var s = new DiskTraceScanner();
         root = root.TrimEnd('\\') + "\\";
         s.Root = root.TrimEnd('\\');
         string prof = string.IsNullOrEmpty(profile) || profile == "none" ? null : profile.TrimEnd('\\').ToLowerInvariant();
@@ -327,7 +327,7 @@ public class DiskReportScanner
     }
 }
 '@
-if (-not ('DiskReportScanner' -as [type])) { Add-Type -TypeDefinition $cs -Language CSharp }
+if (-not ('DiskTraceScanner' -as [type])) { Add-Type -TypeDefinition $cs -Language CSharp }
 
 # ------------------------------------------------------------------------------------------------- page (HTML/CSS/JS)
 $css = @'
@@ -495,7 +495,7 @@ $t0 = Get-Date
 Write-Host ''
 Write-Host ($T.scanning -f $root) -ForegroundColor Cyan
 $progress = [Action[int]] { param($n) Write-Host ($T.foldersRead -f (Format-Count $n)) }
-$scan = [DiskReportScanner]::Run($root, $UserProfile, $progress)
+$scan = [DiskTraceScanner]::Run($root, $UserProfile, $progress)
 $scan.Aggregate()
 Write-Host $T.building -ForegroundColor Cyan
 $rootNoSlash = $root.TrimEnd('\')
@@ -526,7 +526,7 @@ $html = '<!doctype html><html lang="' + $Language + '"><head><meta charset="utf-
         '<div id="res"></div><main id="tree"></main><script>const DATA={"nodes":' + $nodes + ',"text":' + $text + '};' + "`n" + $js + '</script></body></html>'
 
 New-Item -ItemType Directory -Force $OutputDir | Out-Null
-$out = Join-Path $OutputDir ('disk-report-{0}-{1}-{2}.html' -f $driveRoot.Substring(0, 1), ($label -replace '[^\w-]', '_'), (Get-Date -Format 'yyyy-MM-dd_HHmm'))
+$out = Join-Path $OutputDir ('disktrace-{0}-{1}-{2}.html' -f $driveRoot.Substring(0, 1), ($label -replace '[^\w-]', '_'), (Get-Date -Format 'yyyy-MM-dd_HHmm'))
 [IO.File]::WriteAllText($out, $html, (New-Object Text.UTF8Encoding($false)))
 Write-Host ($T.done -f ([int]((Get-Date) - $t0).TotalSeconds), (Format-Count ($scan.Names.Count - 1)), (Format-Count $scan.TotalFiles), $scan.Errors) -ForegroundColor Green
 Write-Host ($T.pageAt -f $out, ([string]::Format($Culture, '{0:N1}', (Get-Item -LiteralPath $out).Length / 1MB)))
