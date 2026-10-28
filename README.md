@@ -24,6 +24,11 @@ DiskTrace maps storage *layout* (what takes space, and where). It does not trace
 
 ## Usage
 
+> [!TIP]
+> **Downloaded the zip?** Windows marks files from the internet, and may show a security warning the first time.
+> Before extracting, right-click the zip → **Properties** → check **Unblock** → **OK**. Or, in PowerShell, from the
+> extracted folder: `Get-ChildItem -Recurse | Unblock-File`.
+
 Double-click `disktrace.cmd`, choose a drive with the arrow keys (or W/S) and press Enter. The report opens in the
 browser and is saved to `Documents\DiskTrace`.
 
@@ -69,6 +74,11 @@ output).
 > Só lista as pastas e lê o que o próprio sistema de arquivos informa na listagem: nome, tamanho, data da última
 > alteração e atributos. O relatório contém *nomes* de arquivos e pastas (guarde-o com cuidado se os nomes forem
 > sensíveis), mas nunca nada do que está dentro de um arquivo.
+
+> [!TIP]
+> **Baixou o zip?** O Windows marca arquivos vindos da internet e pode mostrar um aviso de segurança na primeira
+> vez. Antes de extrair, clique com o direito no zip → **Propriedades** → marque **Desbloquear** → **OK**. Ou, no
+> PowerShell, dentro da pasta extraída: `Get-ChildItem -Recurse | Unblock-File`.
 
 Escolha um disco e receba um relatório HTML offline de como os arquivos estão distribuídos. O DiskTrace mostra a
 *ocupação* do disco, não rastreia leituras e gravações. Dê dois cliques em `disktrace.cmd`, escolha o disco com as
