@@ -42,6 +42,10 @@ Every folder is in the report. Files are listed one by one when they are 100 MB 
 user's personal folders (the 15 largest per folder, outside `AppData`, caches, `.git`, `node_modules` and build
 output).
 
+## License
+
+[MIT](LICENSE)
+
 ## Português
 
 Escolha um disco e receba um relatório HTML offline de como os arquivos estão distribuídos. Dê dois cliques em
