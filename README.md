@@ -4,11 +4,17 @@ Pick a drive, get an offline HTML report of how its files are laid out.
 
 DiskTrace maps storage *layout* (what takes space, and where). It does not trace disk I/O.
 
+> [!IMPORTANT]
+> **DiskTrace reads metadata only. It never opens a file and never reads file contents.**
+> It enumerates directories and reads, for each entry, only what the file system already reports in the directory
+> listing: name, size, last-write date and attributes. No file is opened, read, hashed or modified, and nothing on
+> the scanned drive is changed. The report therefore contains file and folder *names* (keep it private if your
+> names are sensitive), but never anything that is inside a file.
+
 - **One file, no dependencies.** Pure Windows PowerShell 5.1 (the one that ships with Windows); also runs on
   PowerShell 7. The scan is a small C# class that Windows compiles on the fly with `Add-Type`. No Python, nothing
   to install.
-- **Read-only.** Only names, sizes and dates are read. No file is opened and nothing on the scanned drive changes.
-  Junctions and symbolic links are listed but never followed.
+- **Metadata only, read-only.** See above. Junctions and symbolic links are listed but never followed.
 - **Offline.** The report is a single self-contained HTML file with a `Content-Security-Policy` of
   `default-src 'none'`: no fonts, scripts or images are loaded, and the page cannot make network requests.
 - **Readable.** Dark theme and a lazy tree view: folder names only (the full path shows on hover), size bars,
@@ -57,6 +63,12 @@ output).
 [MIT](LICENSE)
 
 ## Português
+
+> [!IMPORTANT]
+> **O DiskTrace lê apenas metadados. Ele nunca abre arquivos e nunca lê o conteúdo deles.**
+> Só lista as pastas e lê o que o próprio sistema de arquivos informa na listagem: nome, tamanho, data da última
+> alteração e atributos. O relatório contém *nomes* de arquivos e pastas (guarde-o com cuidado se os nomes forem
+> sensíveis), mas nunca nada do que está dentro de um arquivo.
 
 Escolha um disco e receba um relatório HTML offline de como os arquivos estão distribuídos. O DiskTrace mostra a
 *ocupação* do disco, não rastreia leituras e gravações. Dê dois cliques em `disktrace.cmd`, escolha o disco com as

@@ -4,9 +4,13 @@
 
 .DESCRIPTION
     DiskTrace 1.0.0 -- pure Windows PowerShell; no Python, no install.
-    The scan is a small C# class compiled on the fly by Windows (Add-Type). It reads names, sizes and dates only:
-    no file is opened and nothing on the scanned drive is changed. Reparse points (junctions, symlinks) are listed
-    but never followed. The page is a single self-contained HTML file that makes no network request
+
+    METADATA ONLY: DiskTrace NEVER opens files and NEVER reads file contents. It only lists directories and reads
+    file system metadata (name, size, last-write date, attributes) through directory enumeration. Nothing on the
+    scanned drive is changed.
+
+    The scan is a small C# class compiled on the fly by Windows (Add-Type). Reparse points (junctions, symlinks)
+    are listed but never followed. The page is a single self-contained HTML file that makes no network request
     (Content-Security-Policy default-src 'none'). Running as administrator reads more protected system folders;
     it is not required.
 
@@ -38,14 +42,14 @@ $Strings = @{
         pickDrive = 'Choose a drive:'
         pickProfile = 'This drive has more than one user profile. Which one should be used to list personal files?'
         noLabel = '(no label)'; free = 'free'; noDrives = 'No drive found.'
-        scanning = 'Scanning {0} (names, sizes and dates only)...'; foldersRead = '  {0} folders read'
+        scanning = 'Scanning {0} (metadata only: names, sizes and dates; file contents are never read)...'; foldersRead = '  {0} folders read'
         building = 'Building the page...'
         done = 'Done in {0} s: {1} folders, {2} files, {3} protected folders could not be read.'
         pageAt = 'Page: {0} ({1} MB)'; pressEnter = 'Press Enter to exit'; outDir = 'DiskTrace'
         titleDrive = 'Drive {0} - {1}'; titleFolder = 'Folder {0}'; driveWord = 'drive'
         generated = 'DiskTrace · generated {0} · {1}'; dateFmt = 'yyyy-MM-dd HH:mm'
         capacity = 'capacity'; used = 'used'; freeCard = 'free'; filesCounted = 'files counted'; folders = 'folders'; largest = 'largest: '
-        help = 'Click a folder to open it; "smaller items" opens too. The bar compares the size with the parent folder; hover to see the full path. Files are listed one by one when they are 100 MB or larger or sit in personal folders. Reparse points (junctions, links) are shown but not followed. Names, sizes and dates only; no file was opened. {0} folders could not be read (protected by the system) and are left out of the totals.'
+        help = 'Click a folder to open it; "smaller items" opens too. The bar compares the size with the parent folder; hover to see the full path. Files are listed one by one when they are 100 MB or larger or sit in personal folders. Reparse points (junctions, links) are shown but not followed. Metadata only (names, sizes and dates): no file was opened and no file content was read. {0} folders could not be read (protected by the system) and are left out of the totals.'
         search = 'Search folder or file (Enter)'; collapse = 'Collapse all'
         js = @{ smaller = 'smaller items'; files = 'files'; none = 'Nothing found.'; link = 'shortcut'; locale = 'en-US' }
     }
@@ -54,14 +58,14 @@ $Strings = @{
         pickDrive = 'Escolha o disco:'
         pickProfile = 'Esse disco tem mais de um perfil de usuário. Qual usar para listar os arquivos pessoais?'
         noLabel = '(sem nome)'; free = 'livres'; noDrives = 'Nenhum disco encontrado.'
-        scanning = 'Varrendo {0} (só nomes, tamanhos e datas)...'; foldersRead = '  {0} pastas lidas'
+        scanning = 'Varrendo {0} (só metadados: nomes, tamanhos e datas; o conteúdo dos arquivos nunca é lido)...'; foldersRead = '  {0} pastas lidas'
         building = 'Montando a página...'
         done = 'Pronto em {0} s: {1} pastas, {2} arquivos, {3} pastas protegidas não lidas.'
         pageAt = 'Página: {0} ({1} MB)'; pressEnter = 'Enter para sair'; outDir = 'DiskTrace'
         titleDrive = 'Disco {0} - {1}'; titleFolder = 'Pasta {0}'; driveWord = 'disco'
         generated = 'DiskTrace · gerado em {0} · {1}'; dateFmt = 'dd/MM/yyyy HH:mm'
         capacity = 'capacidade'; used = 'usado'; freeCard = 'livre'; filesCounted = 'arquivos contados'; folders = 'pastas'; largest = 'maior: '
-        help = 'Clique numa pasta para abrir; "itens menores" também abre. A barra compara o tamanho com a pasta de cima; passe o mouse para ver o caminho completo. Arquivos aparecem individualmente quando têm 100 MB ou mais ou estão nas pastas pessoais. Atalhos do sistema (junções, links) aparecem mas não são seguidos. Só nomes, tamanhos e datas; nenhum arquivo foi aberto. {0} pastas não puderam ser lidas (protegidas pelo sistema) e ficam de fora dos totais.'
+        help = 'Clique numa pasta para abrir; "itens menores" também abre. A barra compara o tamanho com a pasta de cima; passe o mouse para ver o caminho completo. Arquivos aparecem individualmente quando têm 100 MB ou mais ou estão nas pastas pessoais. Atalhos do sistema (junções, links) aparecem mas não são seguidos. Só metadados (nomes, tamanhos e datas): nenhum arquivo foi aberto e nenhum conteúdo foi lido. {0} pastas não puderam ser lidas (protegidas pelo sistema) e ficam de fora dos totais.'
         search = 'Buscar pasta ou arquivo (Enter)'; collapse = 'Recolher tudo'
         js = @{ smaller = 'itens menores'; files = 'arq.'; none = 'Nada encontrado.'; link = 'atalho'; locale = 'pt-BR' }
     }
