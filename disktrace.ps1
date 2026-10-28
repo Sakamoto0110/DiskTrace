@@ -3,7 +3,7 @@
     Pick a drive and get an offline HTML report of how its files are laid out.
 
 .DESCRIPTION
-    DiskTrace 1.0.0 -- pure Windows PowerShell; no Python, no install.
+    DiskTrace 1.1.0 -- pure Windows PowerShell; no Python, no install.
 
     METADATA ONLY: DiskTrace NEVER opens files and NEVER reads file contents. It only lists directories and reads
     file system metadata (name, size, last-write date, attributes) through directory enumeration. Nothing on the
@@ -44,14 +44,20 @@ $Strings = @{
         noLabel = '(no label)'; free = 'free'; noDrives = 'No drive found.'
         scanning = 'Scanning {0} (metadata only: names, sizes and dates; file contents are never read)...'; foldersRead = '  {0} folders read'
         building = 'Building the page...'
-        done = 'Done in {0} s: {1} folders, {2} files, {3} protected folders could not be read.'
+        done = 'Done in {0} s: {1} folders, {2} files; {3} folders could not be opened (listed at the top of the page).'
         pageAt = 'Page: {0} ({1} MB)'; pressEnter = 'Press Enter to exit'; outDir = 'DiskTrace'
         titleDrive = 'Drive {0} - {1}'; titleFolder = 'Folder {0}'; driveWord = 'drive'
         generated = 'DiskTrace · generated {0} · {1}'; dateFmt = 'yyyy-MM-dd HH:mm'
         capacity = 'capacity'; used = 'used'; freeCard = 'free'; filesCounted = 'files counted'; folders = 'folders'; largest = 'largest: '
-        help = 'Click a folder to open it; "smaller items" opens too. The bar compares the size with the parent folder; hover to see the full path. Files are listed one by one when they are 100 MB or larger or sit in personal folders. Reparse points (junctions, links) are shown but not followed. Metadata only (names, sizes and dates): no file was opened and no file content was read. {0} folders could not be read (protected by the system) and are left out of the totals.'
+        help = 'Click a folder to open it; "smaller items" opens too. The bar compares the size with the parent folder; hover to see the full path. Files are listed one by one when they are 100 MB or larger or sit in personal folders. Reparse points (junctions, links) are shown but not followed. Metadata only (names, sizes and dates): no file was opened and no file content was read. {0} folders could not be opened (usually protected by Windows): they are listed at the top of the page and marked with 🔒 in the tree, and what is inside them is left out of the totals.'
         search = 'Search folder or file (Enter)'; collapse = 'Collapse all'
-        js = @{ smaller = 'smaller items'; files = 'files'; none = 'Nothing found.'; link = 'shortcut'; locale = 'en-US' }
+        unreadTitle = '🔒 Folders that could not be opened: {0}'
+        unreadText = 'Listed here so nothing is hidden. DiskTrace could not list what is inside them, so their size is unknown and is not in the totals. Most are protected by Windows; running as administrator opens many of them. Click one to find it in the tree.'
+        notSeen = 'used, not seen by the scan'; notSeenNeg = 'counted above the used space'
+        notSeenHelp = ' The "not seen" card is the used space minus what the scan added up: folders that could not be opened, NTFS metadata and restore points. Hard links and compressed files are counted at full size, which makes that number smaller and can turn it negative.'
+        js = @{ smaller = 'smaller items'; files = 'files'; none = 'Nothing found.'; link = 'shortcut'; locale = 'en-US'
+               denied = 'no access'; deniedPart = 'partly read, then access denied'; error = 'could not be read'; errorPart = 'partly read, then failed'
+               unknown = 'size unknown'; inside = '{0} folders without access inside' }
     }
     'pt-BR' = @{
         menuHint = '  ↑/↓ ou W/S para mover · Enter para escolher · Esc para sair'
@@ -60,14 +66,20 @@ $Strings = @{
         noLabel = '(sem nome)'; free = 'livres'; noDrives = 'Nenhum disco encontrado.'
         scanning = 'Varrendo {0} (só metadados: nomes, tamanhos e datas; o conteúdo dos arquivos nunca é lido)...'; foldersRead = '  {0} pastas lidas'
         building = 'Montando a página...'
-        done = 'Pronto em {0} s: {1} pastas, {2} arquivos, {3} pastas protegidas não lidas.'
+        done = 'Pronto em {0} s: {1} pastas, {2} arquivos; {3} pastas não puderam ser abertas (listadas no topo da página).'
         pageAt = 'Página: {0} ({1} MB)'; pressEnter = 'Enter para sair'; outDir = 'DiskTrace'
         titleDrive = 'Disco {0} - {1}'; titleFolder = 'Pasta {0}'; driveWord = 'disco'
         generated = 'DiskTrace · gerado em {0} · {1}'; dateFmt = 'dd/MM/yyyy HH:mm'
         capacity = 'capacidade'; used = 'usado'; freeCard = 'livre'; filesCounted = 'arquivos contados'; folders = 'pastas'; largest = 'maior: '
-        help = 'Clique numa pasta para abrir; "itens menores" também abre. A barra compara o tamanho com a pasta de cima; passe o mouse para ver o caminho completo. Arquivos aparecem individualmente quando têm 100 MB ou mais ou estão nas pastas pessoais. Atalhos do sistema (junções, links) aparecem mas não são seguidos. Só metadados (nomes, tamanhos e datas): nenhum arquivo foi aberto e nenhum conteúdo foi lido. {0} pastas não puderam ser lidas (protegidas pelo sistema) e ficam de fora dos totais.'
+        help = 'Clique numa pasta para abrir; "itens menores" também abre. A barra compara o tamanho com a pasta de cima; passe o mouse para ver o caminho completo. Arquivos aparecem individualmente quando têm 100 MB ou mais ou estão nas pastas pessoais. Atalhos do sistema (junções, links) aparecem mas não são seguidos. Só metadados (nomes, tamanhos e datas): nenhum arquivo foi aberto e nenhum conteúdo foi lido. {0} pastas não puderam ser abertas (em geral protegidas pelo Windows): estão listadas no topo da página e marcadas com 🔒 na árvore, e o que há dentro delas fica de fora dos totais.'
         search = 'Buscar pasta ou arquivo (Enter)'; collapse = 'Recolher tudo'
-        js = @{ smaller = 'itens menores'; files = 'arq.'; none = 'Nada encontrado.'; link = 'atalho'; locale = 'pt-BR' }
+        unreadTitle = '🔒 Pastas que não puderam ser abertas: {0}'
+        unreadText = 'Listadas aqui para que nada fique escondido. O DiskTrace não conseguiu listar o que há dentro delas, então o tamanho é desconhecido e não entra nos totais. A maioria é protegida pelo Windows; rodar como administrador abre muitas delas. Clique numa para achá-la na árvore.'
+        notSeen = 'usado e não visto pela varredura'; notSeenNeg = 'somado acima do espaço usado'
+        notSeenHelp = ' O cartão "não visto" é o espaço usado menos o que a varredura somou: pastas que não abriram, metadados do NTFS e pontos de restauração. Hard links e arquivos comprimidos entram com o tamanho cheio, o que diminui esse número e pode deixá-lo negativo.'
+        js = @{ smaller = 'itens menores'; files = 'arq.'; none = 'Nada encontrado.'; link = 'atalho'; locale = 'pt-BR'
+               denied = 'sem acesso'; deniedPart = 'lida em parte, depois acesso negado'; error = 'não pôde ser lida'; errorPart = 'lida em parte, depois falhou'
+               unknown = 'tamanho desconhecido'; inside = '{0} pastas sem acesso aqui dentro' }
     }
 }
 $T = $Strings[$Language]
@@ -94,7 +106,11 @@ public class DiskTraceScanner
     public List<long> FileTime = new List<long>();
     public List<int> LinkDir = new List<int>();
     public List<string> LinkName = new List<string>();
-    public int Errors;
+    public List<int> Unread = new List<int>();         // folders whose listing failed
+    public List<byte> UnreadWhy = new List<byte>();    // 0 access denied, 1 other error
+    public List<bool> UnreadPart = new List<bool>();   // true when some entries were read before the failure
+    public int Errors;                                 // folders that could not be read (= Unread.Count)
+    public int EntryErrors;                            // entries whose size or attributes could not be read
     public string Root;
     public long TotalBytes;
     public long TotalFiles;
@@ -128,12 +144,14 @@ public class DiskTraceScanner
             int idx = cur.Key;
             bool list = listable.Contains(idx);
             var top = new List<Item>();
+            int got = 0;
             try
             {
                 foreach (var e in new DirectoryInfo(cur.Value).EnumerateFileSystemInfos())
                 {
+                    got++;
                     FileAttributes at;
-                    try { at = e.Attributes; } catch { s.Errors++; continue; }
+                    try { at = e.Attributes; } catch { s.EntryErrors++; continue; }
                     if ((at & FileAttributes.ReparsePoint) != 0)
                     {
                         s.LinkDir.Add(idx); s.LinkName.Add(e.Name);
@@ -159,7 +177,7 @@ public class DiskTraceScanner
                     }
                     var f = (FileInfo)e;
                     long size, t;
-                    try { size = f.Length; t = f.LastWriteTimeUtc.Ticks; } catch { s.Errors++; continue; }
+                    try { size = f.Length; t = f.LastWriteTimeUtc.Ticks; } catch { s.EntryErrors++; continue; }
                     s.OwnFiles[idx]++; s.OwnBytes[idx] += size;
                     if (t > s.Newest[idx]) s.Newest[idx] = t;
                     if (size >= BigFile) { s.FileDir.Add(idx); s.FileName.Add(e.Name); s.FileSize.Add(size); s.FileTime.Add(t); }
@@ -170,7 +188,11 @@ public class DiskTraceScanner
                     }
                 }
             }
-            catch { s.Errors++; }
+            catch (Exception ex)
+            {
+                s.Errors++;
+                s.Unread.Add(idx); s.UnreadWhy.Add((byte)(ex is UnauthorizedAccessException ? 0 : 1)); s.UnreadPart.Add(got > 0);
+            }
             if (top.Count > 0)
             {
                 top.Sort((a, b) => b.Size.CompareTo(a.Size));
@@ -257,17 +279,20 @@ public class DiskTraceScanner
     }
 
     public long[] SubBytes, SubFiles, SubDirs, SubNewest;
+    public int[] Flag, SubUnread;   // Flag: 0 read, 1 access denied, 2 denied after a partial read, 3 other error, 4 error after a partial read
     public string[] Paths;
 
     public void Aggregate()
     {
         int n = Names.Count;
         SubBytes = new long[n]; SubFiles = new long[n]; SubDirs = new long[n]; SubNewest = new long[n]; Paths = new string[n];
+        Flag = new int[n]; SubUnread = new int[n];
+        for (int u = 0; u < Unread.Count; u++) { Flag[Unread[u]] = 1 + 2 * UnreadWhy[u] + (UnreadPart[u] ? 1 : 0); SubUnread[Unread[u]] = 1; }
         for (int i = 0; i < n; i++) { SubBytes[i] = OwnBytes[i]; SubFiles[i] = OwnFiles[i]; SubNewest[i] = Newest[i]; }
         for (int i = n - 1; i > 0; i--)   // a child always has a larger index than its parent
         {
             int p = Parent[i];
-            SubBytes[p] += SubBytes[i]; SubFiles[p] += SubFiles[i]; SubDirs[p] += 1 + SubDirs[i];
+            SubBytes[p] += SubBytes[i]; SubFiles[p] += SubFiles[i]; SubDirs[p] += 1 + SubDirs[i]; SubUnread[p] += SubUnread[i];
             if (SubNewest[i] > SubNewest[p]) SubNewest[p] = SubNewest[i];
         }
         Paths[0] = "";
@@ -287,7 +312,8 @@ public class DiskTraceScanner
         return Notes.TryGetValue(p, out v) ? v[lang] : "";
     }
 
-    // nodes: [id, parent, name, kind, bytes, files, subdirs, newest, note, ownBytes, ownFiles]; kind d=folder f=file l=link
+    // nodes: [id, parent, name, kind, bytes, files, subdirs, newest, note, ownBytes, ownFiles, flag, unreadBelow]
+    // kind d=folder f=file l=link; flag and unreadBelow only on folders (see Flag, SubUnread)
     public string NodesJson(string profRel, int lang)
     {
         profRel = (profRel ?? "").TrimEnd('\\').ToLowerInvariant();
@@ -300,7 +326,7 @@ public class DiskTraceScanner
             sb.Append('[').Append(i).Append(',').Append(Parent[i]).Append(',');
             Str(sb, Names[i]); sb.Append(",\"d\",").Append(SubBytes[i]).Append(',').Append(SubFiles[i]).Append(',').Append(SubDirs[i]).Append(',');
             Str(sb, Day(SubNewest[i])); sb.Append(','); Str(sb, NoteFor(i, profRel, lang));
-            sb.Append(',').Append(OwnBytes[i]).Append(',').Append(OwnFiles[i]).Append(']');
+            sb.Append(',').Append(OwnBytes[i]).Append(',').Append(OwnFiles[i]).Append(',').Append(Flag[i]).Append(',').Append(SubUnread[i]).Append(']');
         }
         int id = n;
         for (int j = 0; j < FileDir.Count; j++, id++)
@@ -356,6 +382,9 @@ button:hover{border-color:var(--accent)}main{padding:8px 16px 40px}
 .kids{margin-left:18px;border-left:1px solid var(--line);padding-left:4px}
 #res{padding:0 24px}.r{padding:4px 0;cursor:pointer;color:var(--accent);font-size:13px}.r span{color:var(--muted)}
 section.help{padding:10px 24px;color:var(--muted);font-size:13px;border-bottom:1px solid var(--line)}
+.lock{color:var(--part);font-size:12px;white-space:nowrap}.lock.in{color:var(--muted)}
+section.unr{padding:10px 24px;font-size:13px;border-bottom:1px solid var(--line)}section.unr summary{cursor:pointer;color:var(--part)}
+section.unr p{margin:6px 0 0;color:var(--muted)}section.unr .list{max-height:320px;overflow:auto;margin-top:6px}
 '@
 $js = @'
 const N=DATA.nodes,L=DATA.text,K={},byId={};
@@ -369,11 +398,15 @@ function full(id){const p=[];let n=byId[id];while(n){p.unshift(n[2]);n=n[1]>=0?b
 function cols(bytes,pb,files,date,isLink,isDirLike){const pct=pb?Math.max(0.5,100*bytes/pb):100;
  return `<span class="bar"><i style="width:${isLink?0:pct.toFixed(1)}%"></i></span><span class="sz">${isLink?'':hb(bytes)}</span>`+
  `<span class="ct">${isDirLike?fmt(files)+' '+L.files:''}</span><span class="dt">${date}</span>`;}
+const WHY=[,L.denied,L.deniedPart,L.error,L.errorPart];
 function row(id,pb){
  const n=byId[id],kind=n[3],el=document.createElement('div');el.className='w';
  const r=document.createElement('div');r.className='n '+kind;r.id='n'+id;r.title=full(id);
- const has=!!K[id]&&kind==='d';
- let h=`<span class="c">${has?'▸':''}</span><span class="nm">${esc(n[2])}</span>`+cols(n[4],pb,n[5],n[7],kind==='l',kind==='d');
+ const has=!!K[id]&&kind==='d',fl=n[11]||0,blind=fl===1||fl===3;
+ let h=`<span class="c">${has?'▸':''}</span><span class="nm">${esc(n[2])}</span>`;
+ h+=blind?`<span class="bar"></span><span class="sz">?</span><span class="ct"></span><span class="dt"></span>`:cols(n[4],pb,n[5],n[7],kind==='l',kind==='d');
+ if(fl)h+=`<span class="lock">🔒 ${esc(WHY[fl])}${blind?' · '+esc(L.unknown):''}</span>`;
+ else if(n[12])h+=`<span class="lock in" title="${esc(L.inside.replace('{0}',fmt(n[12])))}">🔒 ${fmt(n[12])}</span>`;
  if(n[8])h+=`<span class="note">${esc(n[8])}</span>`;
  r.innerHTML=h;el.appendChild(r);
  if(has){const t=()=>toggle(el,id);r.querySelector('.c').onclick=t;r.querySelector('.nm').onclick=t;}
@@ -385,7 +418,7 @@ function group(list,pb){
  el.appendChild(r);return el;}
 function fill(k,list,pb,more){
  const show=[],rest=[];
- list.forEach((c,i)=>{(i<SHOW||(!more&&byId[c][4]>=pb*MINPCT)?show:rest).push(c);});
+ list.forEach((c,i)=>{(i<SHOW||byId[c][11]||(!more&&byId[c][4]>=pb*MINPCT)?show:rest).push(c);});
  if(more&&rest.length<=200){show.push(...rest);rest.length=0;}
  else if(more){show.push(...rest.splice(0,200));}
  for(const c of show)k.appendChild(row(c,pb));
@@ -403,9 +436,14 @@ function reveal(id){const chain=[];let n=byId[id];while(n){chain.unshift(n[0]);n
  document.querySelectorAll('.hl').forEach(x=>x.classList.remove('hl'));const t=document.getElementById('n'+id);if(t){t.classList.add('hl');t.scrollIntoView({block:'center'});}}
 document.getElementById('q').onkeydown=e=>{if(e.key!=='Enter')return;const q=e.target.value.trim().toLowerCase(),R=document.getElementById('res');R.innerHTML='';
  if(!q)return;let c=0;for(const n of N){if(n[2].toLowerCase().includes(q)){const d=document.createElement('div');d.className='r';
- d.innerHTML=esc(n[2])+' <span>— '+esc(n[1]>=0?full(n[1]):'')+' · '+(n[3]==='l'?L.link:hb(n[4]))+'</span>';d.onclick=()=>reveal(n[0]);R.appendChild(d);if(++c>=200)break;}}
+ d.innerHTML=esc(n[2])+' <span>— '+esc(n[1]>=0?full(n[1]):'')+' · '+(n[3]==='l'?L.link:n[11]===1||n[11]===3?'?':hb(n[4]))+'</span>';d.onclick=()=>reveal(n[0]);R.appendChild(d);if(++c>=200)break;}}
  if(!c)R.textContent=L.none;};
 document.getElementById('collapse').onclick=()=>{reset();document.getElementById('res').innerHTML='';};
+const U=document.getElementById('unread');
+if(U)U.ontoggle=()=>{const box=U.querySelector('.list');if(!U.open||box.childElementCount)return;
+ const ids=N.filter(n=>n[3]==='d'&&n[11]).map(n=>n[0]).sort((a,b)=>full(a).localeCompare(full(b)));
+ for(const id of ids){const d=document.createElement('div');d.className='r';
+  d.innerHTML=esc(full(id))+' <span>— '+esc(WHY[byId[id][11]])+'</span>';d.onclick=()=>reveal(id);box.appendChild(d);}};
 '@
 
 # ------------------------------------------------------------------------------------------------- helpers
@@ -515,17 +553,25 @@ $title = if ($isFolder) { $T.titleFolder -f $root } else { $T.titleDrive -f $dri
 $cards = New-Object System.Collections.Generic.List[object]
 if ($vol -and -not $isFolder) {
     $cards.Add(@((Format-Size $vol.Size), $T.capacity)); $cards.Add(@((Format-Size ($vol.Size - $vol.SizeRemaining)), $T.used)); $cards.Add(@((Format-Size $vol.SizeRemaining), $T.freeCard))
+    $notSeen = ($vol.Size - $vol.SizeRemaining) - $scan.TotalBytes
+    $cards.Add(@((Format-Size ([Math]::Abs($notSeen))), $(if ($notSeen -ge 0) { $T.notSeen } else { $T.notSeenNeg })))
 }
 $cards.Add(@((Format-Count $scan.TotalFiles), $T.filesCounted)); $cards.Add(@((Format-Count ($scan.Names.Count - 1)), $T.folders))
 foreach ($c in $scan.TopChildren(4)) { $p = $c.Split('|'); $cards.Add(@((Format-Size ([double]$p[1])), ($T.largest + $p[0]))) }
 $cardsHtml = ($cards | ForEach-Object { '<div class="card"><b>' + (Html $_[0]) + '</b><span>' + (Html $_[1]) + '</span></div>' }) -join ''
 $sub = $T.generated -f (Get-Date).ToString($T.dateFmt, $Culture), $root
 $text = '{' + (($T.js.GetEnumerator() | ForEach-Object { (Js $_.Key) + ':' + (Js $_.Value) }) -join ',') + '}'
+$help = ($T.help -f $scan.Errors) + $(if ($vol -and -not $isFolder) { $T.notSeenHelp } else { '' })
+$unreadHtml = ''
+if ($scan.Errors -gt 0) {
+    $unreadHtml = '<section class="unr"><details id="unread"><summary>' + (Html ($T.unreadTitle -f (Format-Count $scan.Errors))) + '</summary><p>' +
+                  (Html $T.unreadText) + '</p><div class="list"></div></details></section>'
+}
 
 $html = '<!doctype html><html lang="' + $Language + '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
         '<meta http-equiv="Content-Security-Policy" content="default-src ''none''; style-src ''unsafe-inline''; script-src ''unsafe-inline''">' +
         '<title>' + (Html $title) + '</title><style>' + $css + '</style></head><body><header><h1>' + (Html $title) + '</h1><div class="sub">' + (Html $sub) +
-        '</div><div class="cards">' + $cardsHtml + '</div></header><section class="help">' + (Html ($T.help -f $scan.Errors)) + '</section>' +
+        '</div><div class="cards">' + $cardsHtml + '</div></header>' + $unreadHtml + '<section class="help">' + (Html $help) + '</section>' +
         '<div class="tools"><input id="q" placeholder="' + (Html $T.search) + '"><button id="collapse">' + (Html $T.collapse) + '</button></div>' +
         '<div id="res"></div><main id="tree"></main><script>const DATA={"nodes":' + $nodes + ',"text":' + $text + '};' + "`n" + $js + '</script></body></html>'
 
