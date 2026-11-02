@@ -122,6 +122,10 @@ output).
 
 ### Roadmap
 
+- **Analytics (1.3):** a new page that looks at every snapshot in a period, not just two: diverging bars of the
+  folders with the largest changes (green grew, red shrank), the top-level folders over time as a stacked area, a
+  trend line for each folder that changed the most with its average change per week, and a heatmap of folder ×
+  snapshot that shows when each folder jumped. Summary snapshots are enough; full ones add the files.
 - **Scheduled snapshots:** create the weekly task from the menu.
 
 ### License
@@ -251,6 +255,11 @@ pessoais do usuário (os 15 maiores de cada pasta, fora `AppData`, caches, `.git
 
 ### Próximos passos
 
+- **Analytics (1.3):** uma página nova que olha todos os snapshots de um período, não só dois: barras divergentes
+  com as pastas de maior mudança (verde cresceu, vermelho diminuiu), as pastas de primeiro nível ao longo do tempo
+  em área empilhada, uma linha de tendência para cada pasta que mais mudou com a mudança média por semana, e um mapa
+  de calor de pasta × snapshot que mostra quando cada pasta deu o salto. Snapshots resumidos bastam; os completos
+  acrescentam os arquivos.
 - **Snapshots agendados:** criar a tarefa semanal pelo próprio menu.
 
 ### Licença
